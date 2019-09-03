@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Aux from '../../hoc/Auxillary';
+import Aux from '../../hoc/Aux/Aux';
 import Burger from '../../components/Burger/Burger';
 import BuildControls from '../../components/Burger/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
@@ -50,7 +50,7 @@ class BurgerBuilder extends Component {
         updatedIngredients[type] = updatedCount;
         const newPrice = INGREDIENT_PRICES[type] + this.state.totalPrice;
         this.setState({ totalPrice: newPrice, ingredients: updatedIngredients })
-        // need to pass working copy of ingredients cuz steState may not complete before
+        // need to pass working copy of ingredients cuz setState may not complete before
         this.updatePurchaseState(updatedIngredients);
     };
 
@@ -88,6 +88,7 @@ class BurgerBuilder extends Component {
 
         return (
             <Aux>
+                {/* does not need to render on change (Modal and Order Summary) */}
                 <Modal show={this.state.purchasing} modalClose={this.purchaseCancelHandler}>
                     <OrderSummary
                         ingredients={this.state.ingredients}
