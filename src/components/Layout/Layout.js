@@ -1,19 +1,39 @@
-import React from 'react';
+import React, { Component } from 'react';
 import Aux from '../../hoc/Auxillary';
 import Toolbar from '../Navigation/Toolbar/Toolbar'
 import styles from './Layout.module.css';
 import SideDrawer from '../Navigation/SideDrawer/SideDrawer';
 
-const layout = (props) => (
-    // Aux used as high-order component so wrapping element not required
-    <Aux>
-        <div>Toolbar, Sidebar, Backdrop</div>
-        <Toolbar />
-        <SideDrawer />
-        <main className={styles.Content}>
-            {props.children}
-        </main>
-    </Aux>
-);
+class Layout extends Component {
 
-export default layout;
+    state = {
+        showSideDrawer: true,
+    };
+
+    sideDrawerClosed = () => {
+        this.setState({ showSideDrawer: false })
+    };
+
+    // use prevState rather than this.state in setState (async issue if you do that)
+    sideDrawerToggleHandler = () => {
+        this.setState((prevState) => {
+            return { showSideDrawer: !prevState.showSideDrawer };
+        })
+    };
+
+    render() {
+        return (
+            <Aux>
+                <Toolbar drawerToggleClicked={this.sideDrawerToggleHandler}/>
+                <SideDrawer
+                    closed={this.sideDrawerClosed}
+                    open={this.state.showSideDrawer} />
+                <main className={styles.Content}>
+                    {this.props.children}
+                </main>
+            </Aux>
+        )
+    };
+};
+
+export default Layout;
