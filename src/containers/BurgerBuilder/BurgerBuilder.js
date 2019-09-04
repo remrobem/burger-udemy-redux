@@ -4,7 +4,8 @@ import Burger from '../../components/Burger/Burger';
 import BuildControls from '../../components/Burger/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
-import burgerDB from '../../../src/burgerDB'
+import burgerDB from '../../../src/burgerDB';
+import Spinner from '../../components/UI/Spinner/Spinner'
 
 const INGREDIENT_PRICES = {
     salad: .3,
@@ -25,6 +26,7 @@ class BurgerBuilder extends Component {
         totalPrice: 4,
         purchasable: false,
         purchasing: false,
+        checkoutLoading: false,
     };
 
     purchaseHandler = () => {
@@ -91,14 +93,16 @@ class BurgerBuilder extends Component {
             },
             deliveryMethod: 'fastest'
         }
+        this.setState({checkoutLoading: true});
         burgerDB.post('/orders.json', order)
-        .then( response => {
-            console.log('burgerDB post: ', response)
-        })
-        .catch(error => {
-            console.log('burgerDB error: ', error)
-
-        })
+            .then(response => {
+                console.log('burgerDB post: ', response)
+                this.setState({checkoutLoading: false, purchasing: false});
+            })
+            .catch(error => {
+                console.log('burgerDB error: ', error)
+                this.setState({checkoutLoading: false, purchasing: false});
+            })
 
     };
 
@@ -111,16 +115,23 @@ class BurgerBuilder extends Component {
             disabledInfo[key] = disabledInfo[key] <= 0;
         };
 
+        let orderSummary = 
+       <OrderSummary
+            ingredients={this.state.ingredients}
+            purchaseCancelled={this.purchaseCancelHandler}
+            purchaseContinued={this.purchaseContinueHandler}
+            price={this.state.totalPrice}
+        />
+
+        if (this.state.checkoutLoading) {
+            orderSummary = <Spinner />
+        };
+
         return (
             <Aux>
                 {/* does not need to render on change (Modal and Order Summary) */}
                 <Modal show={this.state.purchasing} modalClose={this.purchaseCancelHandler}>
-                    <OrderSummary
-                        ingredients={this.state.ingredients}
-                        purchaseCancelled={this.purchaseCancelHandler}
-                        purchaseContinued={this.purchaseContinueHandler}
-                        price={this.state.totalPrice}
-                    />
+                    {orderSummary}
                 </Modal>
                 <Burger ingredients={this.state.ingredients} />
                 <BuildControls
