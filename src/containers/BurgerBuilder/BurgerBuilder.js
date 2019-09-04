@@ -4,6 +4,7 @@ import Burger from '../../components/Burger/Burger';
 import BuildControls from '../../components/Burger/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
+import burgerDB from '../../../src/burgerDB'
 
 const INGREDIENT_PRICES = {
     salad: .3,
@@ -74,7 +75,31 @@ class BurgerBuilder extends Component {
     };
 
     purchaseContinueHandler = () => {
-        console.log('Continue')
+        // console.log('Continue')
+        const order = {
+            ingredients: this.state.ingredients,
+            price: this.state.totalPrice,
+            customer: {
+                name: 'Rob',
+                address: {
+                    street: '123 Maple Ave',
+                    city: 'Anytown',
+                    state: 'NC',
+                    zip: '12345'
+                },
+                email: 'donotreply@email.com'
+            },
+            deliveryMethod: 'fastest'
+        }
+        burgerDB.post('/orders.json', order)
+        .then( response => {
+            console.log('burgerDB post: ', response)
+        })
+        .catch(error => {
+            console.log('burgerDB error: ', error)
+
+        })
+
     };
 
     render() {
