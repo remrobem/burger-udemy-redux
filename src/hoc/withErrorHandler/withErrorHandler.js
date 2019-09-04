@@ -18,16 +18,21 @@ const withErrorHandler = (WrappedComponent, burgerDB) => {
             super(props);
             // reset to no error when request made
             // the interceptors always need to return something
-            burgerDB.interceptors.request.use(request => {
+            this.requestInterceptor = burgerDB.interceptors.request.use(request => {
                 this.setState({ error: null });
                 return request;
             })
             // if there is an error, set state to the error content
-            burgerDB.interceptors.response.use(req => req, error => {
+            this.responseInterceptor = burgerDB.interceptors.response.use(req => req, error => {
                 this.setState({ error: error });
             })
         };
-        
+
+        componentWillUnmount() {
+            burgerDB.interceptors.request.eject(this.requestInterceptor);
+            burgerDB.interceptors.response.eject(this.responseInterceptor);
+        }
+
         // done so interceptors can be defined
         // componentDidMount() {
         //     // reset to no error when request made
