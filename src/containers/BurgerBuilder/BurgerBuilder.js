@@ -18,21 +18,33 @@ const INGREDIENT_PRICES = {
 class BurgerBuilder extends Component {
 
     state = {
-        ingredients: {
-            salad: 0,
-            bacon: 0,
-            cheese: 0,
-            meat: 0,
-        },
+        // ingredients: {
+        //     salad: 0,
+        //     bacon: 0,
+        //     cheese: 0,
+        //     meat: 0,
+        // },
+        ingredients: null,
         totalPrice: 4,
         purchasable: false,
         purchasing: false,
         checkoutLoading: false,
+        ingredientLoadError: false, // used if error with loading ingredient
+    };
+
+    componentDidMount() {
+        burgerDB.get('/ingredients.json')
+            .then(response => {
+                this.setState({ ingredients: response.data, ingredientLoadError: false });
+            })
+            .catch(error => {
+                this.setState({ingredientLoadError: true});
+            })
     };
 
     purchaseHandler = () => {
         this.setState({ purchasing: true });
-    }
+    };
 
     updatePurchaseState = (ingredients) => {
         // turn object into array, new array of values, sum values
@@ -44,7 +56,7 @@ class BurgerBuilder extends Component {
                 return sum + item
             }, 0);
         this.setState({ purchasable: sum > 0 })
-    }
+    };
 
     addIngredientBuilder = (type) => {
         const updatedCount = this.state.ingredients[type] + 1;
@@ -92,15 +104,15 @@ class BurgerBuilder extends Component {
                 email: 'donotreply@email.com'
             },
             deliveryMethod: 'fastest'
-        }
-        this.setState({checkoutLoading: true});
+        };
+        this.setState({ checkoutLoading: true });
 
         burgerDB.post('/orders.json', order)
             .then(response => {
-                this.setState({checkoutLoading: false, purchasing: false});
+                this.setState({ checkoutLoading: false, purchasing: false });
             })
             .catch(error => {
-                this.setState({checkoutLoading: false, purchasing: false});
+                this.setState({ checkoutLoading: false, purchasing: false });
             })
     };
 
@@ -113,13 +125,34 @@ class BurgerBuilder extends Component {
             disabledInfo[key] = disabledInfo[key] <= 0;
         };
 
-        let orderSummary = 
-            <OrderSummary
+        let orderSummary = null;
+
+        // used to allow for spinner while ingredients lod from DB
+        let burger = this.state.ingredientLoadError ? <p>Ingredients Not Loaded</p> : (<Spinner />);
+
+        if (this.state.ingredients) {
+            burger = (
+                <Aux>
+                    <Burger ingredients={this.state.ingredients} />
+                    <BuildControls
+                        ingredientAdded={this.addIngredientBuilder}
+                        ingredientRemoved={this.removeIngredientBuilder}
+                        disabled={disabledInfo}
+                        price={this.state.totalPrice}
+                        purchasable={this.state.purchasable}
+                        ordered={this.purchaseHandler} />
+                </Aux>
+            );
+
+            orderSummary = (
+                <OrderSummary
                     ingredients={this.state.ingredients}
                     purchaseCancelled={this.purchaseCancelHandler}
                     purchaseContinued={this.purchaseContinueHandler}
                     price={this.state.totalPrice}
                 />
+            );
+        };
 
         if (this.state.checkoutLoading) {
             orderSummary = <Spinner />
@@ -131,14 +164,7 @@ class BurgerBuilder extends Component {
                 <Modal show={this.state.purchasing} modalClose={this.purchaseCancelHandler}>
                     {orderSummary}
                 </Modal>
-                <Burger ingredients={this.state.ingredients} />
-                <BuildControls
-                    ingredientAdded={this.addIngredientBuilder}
-                    ingredientRemoved={this.removeIngredientBuilder}
-                    disabled={disabledInfo}
-                    price={this.state.totalPrice}
-                    purchasable={this.state.purchasable}
-                    ordered={this.purchaseHandler} />
+                {burger}
             </Aux>
         )
     };
