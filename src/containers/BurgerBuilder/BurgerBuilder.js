@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
-import Aux from '../../hoc/Auxillary';
+import Aux from '../../hoc/Aux/Aux';
 import Burger from '../../components/Burger/Burger';
 import BuildControls from '../../components/Burger/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
+import burgerDB from '../../../src/burgerDB';
+import Spinner from '../../components/UI/Spinner/Spinner';
+import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 
 const INGREDIENT_PRICES = {
     salad: .3,
@@ -15,20 +18,33 @@ const INGREDIENT_PRICES = {
 class BurgerBuilder extends Component {
 
     state = {
-        ingredients: {
-            salad: 0,
-            bacon: 0,
-            cheese: 0,
-            meat: 0,
-        },
+        // ingredients: {
+        //     salad: 0,
+        //     bacon: 0,
+        //     cheese: 0,
+        //     meat: 0,
+        // },
+        ingredients: null,
         totalPrice: 4,
         purchasable: false,
         purchasing: false,
+        checkoutLoading: false,
+        ingredientLoadError: false, // used if error with loading ingredient
+    };
+
+    componentDidMount() {
+        burgerDB.get('/ingredients.json')
+            .then(response => {
+                this.setState({ ingredients: response.data, ingredientLoadError: false });
+            })
+            .catch(error => {
+                this.setState({ingredientLoadError: true});
+            })
     };
 
     purchaseHandler = () => {
         this.setState({ purchasing: true });
-    }
+    };
 
     updatePurchaseState = (ingredients) => {
         // turn object into array, new array of values, sum values
@@ -40,7 +56,7 @@ class BurgerBuilder extends Component {
                 return sum + item
             }, 0);
         this.setState({ purchasable: sum > 0 })
-    }
+    };
 
     addIngredientBuilder = (type) => {
         const updatedCount = this.state.ingredients[type] + 1;
@@ -50,7 +66,7 @@ class BurgerBuilder extends Component {
         updatedIngredients[type] = updatedCount;
         const newPrice = INGREDIENT_PRICES[type] + this.state.totalPrice;
         this.setState({ totalPrice: newPrice, ingredients: updatedIngredients })
-        // need to pass working copy of ingredients cuz steState may not complete before
+        // need to pass working copy of ingredients cuz setState may not complete before
         this.updatePurchaseState(updatedIngredients);
     };
 
@@ -74,7 +90,30 @@ class BurgerBuilder extends Component {
     };
 
     purchaseContinueHandler = () => {
-        console.log('Continue')
+        const order = {
+            ingredients: this.state.ingredients,
+            price: this.state.totalPrice,
+            customer: {
+                name: 'Rob',
+                address: {
+                    street: '123 Maple Ave',
+                    city: 'Anytown',
+                    state: 'NC',
+                    zip: '12345'
+                },
+                email: 'donotreply@email.com'
+            },
+            deliveryMethod: 'fastest'
+        };
+        this.setState({ checkoutLoading: true });
+
+        burgerDB.post('/orders.json', order)
+            .then(response => {
+                this.setState({ checkoutLoading: false, purchasing: false });
+            })
+            .catch(error => {
+                this.setState({ checkoutLoading: false, purchasing: false });
+            })
     };
 
     render() {
@@ -86,28 +125,49 @@ class BurgerBuilder extends Component {
             disabledInfo[key] = disabledInfo[key] <= 0;
         };
 
+        let orderSummary = null;
+
+        // used to allow for spinner while ingredients lod from DB
+        let burger = this.state.ingredientLoadError ? <p>Ingredients Not Loaded</p> : (<Spinner />);
+
+        if (this.state.ingredients) {
+            burger = (
+                <Aux>
+                    <Burger ingredients={this.state.ingredients} />
+                    <BuildControls
+                        ingredientAdded={this.addIngredientBuilder}
+                        ingredientRemoved={this.removeIngredientBuilder}
+                        disabled={disabledInfo}
+                        price={this.state.totalPrice}
+                        purchasable={this.state.purchasable}
+                        ordered={this.purchaseHandler} />
+                </Aux>
+            );
+
+            orderSummary = (
+                <OrderSummary
+                    ingredients={this.state.ingredients}
+                    purchaseCancelled={this.purchaseCancelHandler}
+                    purchaseContinued={this.purchaseContinueHandler}
+                    price={this.state.totalPrice}
+                />
+            );
+        };
+
+        if (this.state.checkoutLoading) {
+            orderSummary = <Spinner />
+        };
+
         return (
             <Aux>
+                {/* does not need to render on change (Modal and Order Summary) */}
                 <Modal show={this.state.purchasing} modalClose={this.purchaseCancelHandler}>
-                    <OrderSummary
-                        ingredients={this.state.ingredients}
-                        purchaseCancelled={this.purchaseCancelHandler}
-                        purchaseContinued={this.purchaseContinueHandler}
-                        price={this.state.totalPrice}
-                    />
+                    {orderSummary}
                 </Modal>
-                <Burger ingredients={this.state.ingredients} />
-                <BuildControls
-                    ingredientAdded={this.addIngredientBuilder}
-                    ingredientRemoved={this.removeIngredientBuilder}
-                    disabled={disabledInfo}
-                    price={this.state.totalPrice}
-                    purchasable={this.state.purchasable}
-                    ordered={this.purchaseHandler} />
+                {burger}
             </Aux>
         )
     };
-
 };
 
-export default BurgerBuilder;
+export default withErrorHandler(BurgerBuilder, burgerDB);
