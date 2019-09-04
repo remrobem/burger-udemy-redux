@@ -5,10 +5,6 @@ import Button from '../../UI/Button/Button';
 // class used to lifecycle hooks can be used
 class OrderSummary extends Component {
 
-    componentDidUpdate() {
-        console.log('[OrderSummary] - WillUpdate')
-    };
-
     render() {
         const ingredientSummary = Object.keys(this.props.ingredients)
             .map((igKey) => {

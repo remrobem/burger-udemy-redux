@@ -5,7 +5,8 @@ import BuildControls from '../../components/Burger/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
 import burgerDB from '../../../src/burgerDB';
-import Spinner from '../../components/UI/Spinner/Spinner'
+import Spinner from '../../components/UI/Spinner/Spinner';
+import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 
 const INGREDIENT_PRICES = {
     salad: .3,
@@ -77,7 +78,6 @@ class BurgerBuilder extends Component {
     };
 
     purchaseContinueHandler = () => {
-        // console.log('Continue')
         const order = {
             ingredients: this.state.ingredients,
             price: this.state.totalPrice,
@@ -94,16 +94,14 @@ class BurgerBuilder extends Component {
             deliveryMethod: 'fastest'
         }
         this.setState({checkoutLoading: true});
+
         burgerDB.post('/orders.json', order)
             .then(response => {
-                console.log('burgerDB post: ', response)
                 this.setState({checkoutLoading: false, purchasing: false});
             })
             .catch(error => {
-                console.log('burgerDB error: ', error)
                 this.setState({checkoutLoading: false, purchasing: false});
             })
-
     };
 
     render() {
@@ -116,12 +114,12 @@ class BurgerBuilder extends Component {
         };
 
         let orderSummary = 
-       <OrderSummary
-            ingredients={this.state.ingredients}
-            purchaseCancelled={this.purchaseCancelHandler}
-            purchaseContinued={this.purchaseContinueHandler}
-            price={this.state.totalPrice}
-        />
+            <OrderSummary
+                    ingredients={this.state.ingredients}
+                    purchaseCancelled={this.purchaseCancelHandler}
+                    purchaseContinued={this.purchaseContinueHandler}
+                    price={this.state.totalPrice}
+                />
 
         if (this.state.checkoutLoading) {
             orderSummary = <Spinner />
@@ -144,7 +142,6 @@ class BurgerBuilder extends Component {
             </Aux>
         )
     };
-
 };
 
-export default BurgerBuilder;
+export default withErrorHandler(BurgerBuilder, burgerDB);
