@@ -33,7 +33,8 @@ const withErrorHandler = (WrappedComponent, burgerDB) => {
             burgerDB.interceptors.response.eject(this.responseInterceptor);
         }
 
-        // done so interceptors can be defined
+        // moved to constructor because page is being rendered before this executes and 
+        // error with loading ingredients not getting handled
         // componentDidMount() {
         //     // reset to no error when request made
         //     // the interceptors always need to return something
