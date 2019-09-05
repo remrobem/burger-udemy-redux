@@ -36,7 +36,7 @@ class BurgerBuilder extends Component {
                     .sort((a, b) => {
                         return response.data[a].sort_order - response.data[b].sort_order
                     })
-                    // create array of objects ingredient : initial quantity
+                    // create array of objects  { ingredient : initial quantity }
                     .map(ingredient => {
                         let obj = {};
                         obj[ingredient] = response.data[ingredient].initial_quantity
