@@ -18,12 +18,6 @@ const INGREDIENT_PRICES = {
 class BurgerBuilder extends Component {
 
     state = {
-        // ingredients: {
-        //     salad: 0,
-        //     bacon: 0,
-        //     cheese: 0,
-        //     meat: 0,
-        // },
         ingredients: null,
         totalPrice: 4,
         purchasable: false,
@@ -35,10 +29,29 @@ class BurgerBuilder extends Component {
     componentDidMount() {
         burgerDB.get('/ingredients.json')
             .then(response => {
-                this.setState({ ingredients: response.data, ingredientLoadError: false });
+                let sortedIngredient = Object
+                    // array of the ingredient keys
+                    .keys(response.data)
+                    // sort keys
+                    .sort((a, b) => {
+                        return response.data[a].sort_order - response.data[b].sort_order
+                    })
+                    // create array of objects ingredient : initial quantity
+                    .map(ingredient => {
+                        let obj = {};
+                        obj[ingredient] = response.data[ingredient].initial_quantity
+                        return obj;
+                    })
+                    // create single object containing each ingredient : initial quantity pair
+                    .reduce((obj, item) => {
+                        obj[Object.keys(item)] = parseInt(Object.values(item).join(''));
+                        return obj;
+                    }, {});
+
+                this.setState({ ingredients: sortedIngredient, ingredientLoadError: false });
             })
             .catch(error => {
-                this.setState({ingredientLoadError: true});
+                this.setState({ ingredientLoadError: true });
             })
     };
 
