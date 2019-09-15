@@ -19,7 +19,7 @@ class BurgerBuilder extends Component {
 
     state = {
         ingredients: null,
-        totalPrice: 4,
+        totalPrice: 1.30,
         purchasable: false,
         purchasing: false,
         checkoutLoading: false,
@@ -27,6 +27,8 @@ class BurgerBuilder extends Component {
     };
 
     componentDidMount() {
+        console.log('BurgerBuilder props: ', this.props)
+        let initialTotalPrice = this.state.totalPrice;
         burgerDB.get('/ingredients.json')
             .then(response => {
                 let sortedIngredient = Object
@@ -40,6 +42,7 @@ class BurgerBuilder extends Component {
                     .map(ingredient => {
                         let obj = {};
                         obj[ingredient] = response.data[ingredient].initial_quantity
+                        initialTotalPrice =  initialTotalPrice + (INGREDIENT_PRICES[ingredient] * obj[ingredient]);
                         return obj;
                     })
                     // create single object containing each ingredient : initial quantity pair
@@ -47,8 +50,8 @@ class BurgerBuilder extends Component {
                         obj[Object.keys(item)] = parseInt(Object.values(item).join(''));
                         return obj;
                     }, {});
-
-                this.setState({ ingredients: sortedIngredient, ingredientLoadError: false });
+                this.setState({ purchasable: initialTotalPrice > this.state.totalPrice})
+                this.setState({ ingredients: sortedIngredient, ingredientLoadError: false, totalPrice: initialTotalPrice });
             })
             .catch(error => {
                 this.setState({ ingredientLoadError: true });
@@ -103,30 +106,44 @@ class BurgerBuilder extends Component {
     };
 
     purchaseContinueHandler = () => {
-        const order = {
-            ingredients: this.state.ingredients,
-            price: this.state.totalPrice,
-            customer: {
-                name: 'Rob',
-                address: {
-                    street: '123 Maple Ave',
-                    city: 'Anytown',
-                    state: 'NC',
-                    zip: '12345'
-                },
-                email: 'donotreply@email.com'
-            },
-            deliveryMethod: 'fastest'
-        };
-        this.setState({ checkoutLoading: true });
+        // const order = {
+        //     ingredients: this.state.ingredients,
+        //     price: this.state.totalPrice,
+        //     customer: {
+        //         name: 'Rob',
+        //         address: {
+        //             street: '123 Maple Ave',
+        //             city: 'Anytown',
+        //             state: 'NC',
+        //             zip: '12345'
+        //         },
+        //         email: 'donotreply@email.com'
+        //     },
+        //     deliveryMethod: 'fastest'
+        // };
+        // this.setState({ checkoutLoading: true });
 
-        burgerDB.post('/orders.json', order)
-            .then(response => {
-                this.setState({ checkoutLoading: false, purchasing: false });
-            })
-            .catch(error => {
-                this.setState({ checkoutLoading: false, purchasing: false });
-            })
+        // burgerDB.post('/orders.json', order)
+        //     .then(response => {
+        //         this.setState({ checkoutLoading: false, purchasing: false });
+        //     })
+        //     .catch(error => {
+        //         this.setState({ checkoutLoading: false, purchasing: false });
+        //     })
+
+        // create query string
+        let queryParams = [];
+
+        for (let ingredient in this.state.ingredients) {
+            queryParams.push(encodeURIComponent(ingredient) + '=' + encodeURIComponent(this.state.ingredients[ingredient]))
+        }
+        queryParams = queryParams.join('&');
+
+        // route for /checkout defined in BurgerBuilder
+        this.props.history.push({
+            pathname: '/checkout',
+            search: '?' + queryParams,
+        });
     };
 
     render() {
