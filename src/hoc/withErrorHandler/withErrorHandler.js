@@ -1,7 +1,7 @@
 // global error handler for axios
 import React, { Component } from 'react';
 import Modal from '../../components/UI/Modal/Modal';
-import Aux from '../../hoc/Aux/Aux';
+import Aux from '../Auxillary/Auxillary';
 
 // wrapped component is a HOC concept
 // WrappedComponent is the component that uses this module and is wrapped

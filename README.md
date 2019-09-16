@@ -2,7 +2,11 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-# Database
+## Installed Dependancies
+
+npm i react-router-dom
+
+## Database
 
 Firebase
 <https://burger-udemy-eef3d.firebaseio.com/>
