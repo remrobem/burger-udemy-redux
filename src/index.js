@@ -7,9 +7,11 @@ import { BrowserRouter } from 'react-router-dom';
 
 // <BrowserRouter> required to use routing
 const app = (
-    <BrowserRouter>
-        <App />
-    </BrowserRouter>
+    <React.StrictMode>
+        <BrowserRouter>
+            <App />
+        </BrowserRouter>
+    </React.StrictMode>
 );
 
 ReactDOM.render(app, document.getElementById('root'));
