@@ -27,7 +27,6 @@ class BurgerBuilder extends Component {
     };
 
     componentDidMount() {
-        console.log('BurgerBuilder props: ', this.props)
         let initialTotalPrice = this.state.totalPrice;
         burgerDB.get('/ingredients.json')
             .then(response => {

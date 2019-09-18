@@ -20,16 +20,13 @@ class Checkout extends Component {
         // parse query parameters
         const query = new URLSearchParams(this.props.location.search);
         const ingredients = {};
-        console.log('query entries: ', query)
         let price = 0;
         for (let param of query.entries()) {
-            console.log(param)
             if (param[0] === 'price') {
                 price = +param[1]
             } else {
                 // the + makes the value numeric
                 ingredients[param[0]] = +param[1];
-                // console.log(ingredients) 
             }
 
         }

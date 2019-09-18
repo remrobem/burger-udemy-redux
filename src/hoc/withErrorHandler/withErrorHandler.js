@@ -14,7 +14,10 @@ const withErrorHandler = (WrappedComponent, burgerDB) => {
             error: null,
         };
 
+
         constructor(props) {
+        console.log('in withErrorHandler')
+
             super(props);
             // reset to no error when request made
             // the interceptors always need to return something
@@ -26,6 +29,7 @@ const withErrorHandler = (WrappedComponent, burgerDB) => {
             this.responseInterceptor = burgerDB.interceptors.response.use(req => req, error => {
                 this.setState({ error: error });
             })
+
         };
 
         componentWillUnmount() {
