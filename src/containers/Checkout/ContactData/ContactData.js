@@ -19,6 +19,7 @@ class ContactData extends Component {
                     required: true,
                 },
                 valid: false,
+                touched: false,
             },
             email: {
                 elementType: 'input',
@@ -31,6 +32,7 @@ class ContactData extends Component {
                     required: true,
                 },
                 valid: false,
+                touched: false,
             },
             street: {
                 elementType: 'input',
@@ -43,6 +45,7 @@ class ContactData extends Component {
                     required: true,
                 },
                 valid: false,
+                touched: false,
             },
             city: {
                 elementType: 'input',
@@ -55,6 +58,7 @@ class ContactData extends Component {
                     required: true,
                 },
                 valid: false,
+                touched: false,
             },
             state: {
                 elementType: 'input',
@@ -67,6 +71,7 @@ class ContactData extends Component {
                     required: true,
                 },
                 valid: false,
+                touched: false,
             },
             zip: {
                 elementType: 'input',
@@ -81,6 +86,7 @@ class ContactData extends Component {
                     maxLength: 9
                 },
                 valid: false,
+                touched: false,
             },
             deliveryMethod: {
                 elementType: 'select',
@@ -91,9 +97,14 @@ class ContactData extends Component {
                     ]
                 },
                 value: 'fastest',
+                validation: {},
+                touched: false,
+                valid: true,
+
             },
         },
         loading: false,
+        formIsValid: false,
     };
 
     orderHandler = (event) => {
@@ -125,7 +136,7 @@ class ContactData extends Component {
 
     checkValidity(value, rules) {
         let isValid = true;
-        // && isValid used so that first invalid is kept
+        // && isValid used so that last check is not the only the only one used
         if (rules.required) {
             isValid = value.trim() !== '' && isValid;
         }
@@ -143,7 +154,7 @@ class ContactData extends Component {
 
     inputChangedHandler = (event, inputIdentifier) => {
         event.preventDefault();
-        // console.log(event.target.value);
+        console.log(event.target.value);
         //shallow copy - no nested values - changing new field will change state
         const updatedOrderForm = {
             ...this.state.orderForm
@@ -154,10 +165,19 @@ class ContactData extends Component {
         }
 
         updatedFormElement.value = event.target.value;
-        updatedFormElement.valid = this.checkValidity(updatedFormElement.value, updatedFormElement.validation)
+
+        updatedFormElement.valid = this.checkValidity(updatedFormElement.value, updatedFormElement.validation);
+
+        updatedFormElement.touched = true;
+
         updatedOrderForm[inputIdentifier] = updatedFormElement;
+
+        let formIsValid = true;
+        for (let element in updatedOrderForm) {
+            formIsValid = updatedOrderForm[element].valid && formIsValid;
+        }
         // console.log(updatedFormElement.valid)
-        this.setState({ orderForm: updatedOrderForm })
+        this.setState({ orderForm: updatedOrderForm, formIsValid: formIsValid })
     }
 
     render() {
@@ -181,12 +201,13 @@ class ContactData extends Component {
                             elementType={el.config.elementType}
                             elementConfig={el.config.elementConfig}
                             invalid={!el.config.valid}
-                            shouldValidate={el.config.validation}
+                            shouldValidate={el.config.validation ? true : false}
+                            touched={el.config.touched}
                             changed={(event) => { this.inputChangedHandler(event, el.id) }}
                         />
                     ))
                 }
-                <Button btnType='Success' >Order</Button>
+                <Button btnType='Success' disabled={!this.state.formIsValid}>Order</Button>
             </form>
         );
 

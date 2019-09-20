@@ -6,8 +6,7 @@ const input = (props) => {
     let inputElement = null;
     //array of original styles - can be overrrided when validation error
     const inputStyles = [styles.InputElement];
-
-    if (props.invalid && props.shouldValidate) {
+    if (props.invalid && props.shouldValidate && props.touched) {
         inputStyles.push(styles.Invalid);
     }
 
@@ -49,7 +48,6 @@ const input = (props) => {
                     value={props.value} />;
             break;
     }
-
 
     return (
         <div>
