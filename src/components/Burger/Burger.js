@@ -7,7 +7,7 @@ const burger = (props) => {
     // the match, history, location not available like they are in BurgerBuilder
     // you can import withRouter and wrap the export to get this data
     // match will list last Route used
-    console.log('Burger props: ', props)
+
     // ingredientList : array of <BurgerIngredient />
     // Object.keys(props.ingredients) : converts props object to array of key fields (meat, cheese,...)
     let ingredientList = Object.keys(props.ingredients)

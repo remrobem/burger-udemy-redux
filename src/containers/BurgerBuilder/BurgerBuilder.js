@@ -27,7 +27,6 @@ class BurgerBuilder extends Component {
     };
 
     componentDidMount() {
-        console.log('BurgerBuilder props: ', this.props)
         let initialTotalPrice = this.state.totalPrice;
         burgerDB.get('/ingredients.json')
             .then(response => {
@@ -133,6 +132,9 @@ class BurgerBuilder extends Component {
 
         // create query string
         let queryParams = [];
+        // queryParams.push(encodeURIComponent('price') + '=' + encodeURIComponent(this.state.totalPrice));
+        queryParams.push('price=' + this.state.totalPrice);
+
 
         for (let ingredient in this.state.ingredients) {
             queryParams.push(encodeURIComponent(ingredient) + '=' + encodeURIComponent(this.state.ingredients[ingredient]))
